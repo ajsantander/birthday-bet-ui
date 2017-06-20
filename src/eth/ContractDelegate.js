@@ -2,7 +2,7 @@ import Web3 from 'web3';
 import BetOnDateInterface from './BetOnDate.json';
 
 /* **************************************************************** */
-let contractAddress = '0xbdbc11632bb72ceb705a951b1e0d2133e1691168';
+let contractAddress = '0x36ffb8abcea08a46ad7047aa82085772534b3937';
 /* **************************************************************** */
 
 class ContractDelegate {
@@ -15,7 +15,8 @@ class ContractDelegate {
 
     // Init web3.
     let provider = new Web3.providers.HttpProvider('http://localhost:8545');
-    this.web3 = new Web3(provider);
+    let web3 = new Web3(provider);
+    this.web3 = web3;
     console.log('accounts: ', this.web3.eth.accounts);
 
     // Retrieve contract.
@@ -30,10 +31,11 @@ class ContractDelegate {
 
     // Listen to contract events.
     let gameStateChangedEvent = this.contract.GameStateChanged();
-    gameStateChangedEvent.watch(function(error, result) {
+    gameStateChangedEvent.watch((error, result) => {
       console.log("GameStateChanged");
-      console.log("  error: ", error);
-      console.log("  result: ", result);
+      this.gameState = this.stateAsStr(result.args.state.toNumber());
+      console.log('this.gameState: ', this.gameState);
+      this.updateCallback();
     });
 
     this.deployConsoleUtils();
@@ -62,7 +64,14 @@ class ContractDelegate {
     window.skipToDate = function(date) {
       let dateUnix = delegate.getUnixTimeStamp(date);
       contract.setTime(dateUnix, {from: web3.eth.accounts[0]});
-    }
+    };
+
+    window.resolve = function(date) {
+      let dateUnix = delegate.getUnixTimeStamp(date);
+      contract.resolve(dateUnix, {from: web3.eth.accounts[0], gas: 2100000});
+    };
+
+    window.web3 = web3;
   }
 
   stateAsStr(gameState) {
