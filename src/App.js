@@ -14,9 +14,9 @@ class App extends Component {
   constructor() {
     super();
 
-    this.handleContractUpdate = this.handleContractUpdate.bind(this);
+    this.handleContractStateUpdate = this.handleContractStateUpdate.bind(this);
     this.handlePlaceBet = this.handlePlaceBet.bind(this);
-    this.handleBetStatus = this.handleBetStatus.bind(this);
+    this.handleWithdrawPrize = this.handleWithdrawPrize.bind(this);
 
     this.state = {
       unitBet: 0,
@@ -27,32 +27,33 @@ class App extends Component {
     };
 
     this.contractDelegate = new ContractDelegate(
-      this.handleContractUpdate,
-      this.handleBetStatus
+      this.handleContractStateUpdate
     );
   }
 
-  handleBetStatus(status) {
-    this.setState({
-      placeBetStatus: status
-    });
-  }
-
   componentWillMount() {
-    this.handleContractUpdate();
+    this.handleContractStateUpdate();
   }
 
-  handleContractUpdate() {
+  handleContractStateUpdate() {
     this.setState({
       unitBet: String(this.contractDelegate.unitBet),
       lastDayToBet: String(this.contractDelegate.lastDayToBet),
       gameState: this.contractDelegate.gameState,
-      gameBalance: this.contractDelegate.contractBalance
+      gameBalance: this.contractDelegate.contractBalance,
+      placeBetStatus: this.contractDelegate.placeBetStatus,
+      numWinners: String(this.contractDelegate.numWinners),
+      winPrize: String(this.contractDelegate.winPrize),
+      winDate: String(this.contractDelegate.winDate)
     });
   }
 
   handlePlaceBet(date, acctIndex) {
     this.contractDelegate.placeBet(date, acctIndex);
+  }
+
+  handleWithdrawPrize(acctIndex) {
+    this.contractDelegate.withdrawPrize(acctIndex);
   }
 
   render() {
@@ -70,7 +71,13 @@ class App extends Component {
         activeState = <BetsClosed/>;
         break;
       case 'betsResolved':
-        activeState = <Winner/>;
+        activeState =
+          <Winner
+            numWinners={this.state.numWinners}
+            winPrize={this.state.winPrize}
+            winDate={this.state.winDate}
+            handleWithdrawPrize={this.handleWithdrawPrize}
+          />;
         break;
       default:
         activeState = <p></p>;

@@ -1,17 +1,17 @@
 import Web3 from 'web3';
+import ConsoleUtil from './ConsoleUtil';
 import BetOnDateInterface from './BetOnDate.json';
 
 /* **************************************************************** */
-let contractAddress = '0x36ffb8abcea08a46ad7047aa82085772534b3937';
+let contractAddress = '0x3607766a696519283c9ce489199d417326e1efb8';
 /* **************************************************************** */
 
 class ContractDelegate {
 
-  constructor(updateCallback, placeBetStatusCallback) {
+  constructor(stateUpdateCallback) {
 
     console.log('ContractDelegate');
-    this.updateCallback = updateCallback;
-    this.placeBetStatusCallback = placeBetStatusCallback;
+    this.stateUpdateCallback = stateUpdateCallback;
 
     // Init web3.
     let provider = new Web3.providers.HttpProvider('http://localhost:8545');
@@ -23,72 +23,15 @@ class ContractDelegate {
     this.contract = this.getDeployedContract();
     // console.log('contract: ', this.contract);
 
-    // Get basic contract info.
-    this.unitBet = this.web3.fromWei(this.contract.unitBet.call().toNumber(), 'ether');
-    this.lastDayToBet = this.formatDate(this.contract.lastDayToBet.call().toNumber());
-    this.gameState = this.stateAsStr(this.contract.currentGameState.call().toNumber());
-    this.updateBalance();
+    this.getBasicContractData();
+    this.handleEventsFromTheContract();
 
-    // Listen to contract events.
-    let gameStateChangedEvent = this.contract.GameStateChanged();
-    gameStateChangedEvent.watch((error, result) => {
-      console.log("GameStateChanged");
-      this.gameState = this.stateAsStr(result.args.state.toNumber());
-      console.log('this.gameState: ', this.gameState);
-      this.updateCallback();
-    });
-
-    this.deployConsoleUtils();
+    new ConsoleUtil(this);
   }
 
-  deployConsoleUtils() {
-
-    let web3 = this.web3;
-    let contract = this.contract;
-    let delegate = this;
-
-    window.logBalances = function() {
-      let accounts = web3.eth.accounts;
-      for(let i = 0; i < accounts.length; i++) {
-        let account = accounts[i];
-        console.log('balance ' + account + ' [' + i + ']: ', window.getBalance(account));
-      }
-    };
-
-    window.getBalance = function(account) {
-      let balWei = web3.eth.getBalance(account).toNumber();
-      let balEther = +web3.fromWei(balWei, 'ether');
-      return balEther;
-    };
-
-    window.skipToDate = function(date) {
-      let dateUnix = delegate.getUnixTimeStamp(date);
-      contract.setTime(dateUnix, {from: web3.eth.accounts[0]});
-    };
-
-    window.resolve = function(date) {
-      let dateUnix = delegate.getUnixTimeStamp(date);
-      contract.resolve(dateUnix, {from: web3.eth.accounts[0], gas: 2100000});
-    };
-
-    window.web3 = web3;
-  }
-
-  stateAsStr(gameState) {
-    // return 'betsAreOpen';
-    // return 'betsAreClosed';
-    // return 'betsResolved';
-    switch(gameState) {
-      case 0:
-        return 'betsAreOpen';
-      case 1:
-        return 'betsAreClosed';
-      case 2:
-        return 'betsResolved';
-      default:
-        return 'unknown';
-    }
-  }
+  /*
+  * Interact with contract
+  * */
 
   placeBet(date, acctIndex) {
 
@@ -110,23 +53,76 @@ class ContractDelegate {
     let msg = this.web3.toAscii(results[1]);
     console.log('  success: ', success);
     console.log('  msg: ', msg);
+    this.placeBetStatus = msg;
 
     // Place bet.
     if(success) {
       this.contract.placeBet(betDateUnix, {from:account, value:betValueWei});
     }
 
-    this.updateBalance();
+    this.getBalance();
 
     // Feedback.
-    this.placeBetStatusCallback(msg);
-    this.updateCallback();
+    this.stateUpdateCallback();
   }
 
-  updateBalance() {
+  withdrawPrize(acctIndex) {
+    this.contract.withdrawPrize({from: this.web3.eth.accounts[acctIndex], gas: 2100000});
+  }
+
+  getBasicContractData() {
+    this.unitBet = this.web3.fromWei(this.contract.unitBet.call().toNumber(), 'ether');
+    this.lastDayToBet = this.formatDate(this.contract.lastDayToBet.call().toNumber());
+    this.gameState = this.stateAsStr(this.contract.currentGameState.call().toNumber());
+    this.getBalance();
+  }
+
+  getWinData() {
+    this.numWinners = this.contract.numWinners.call().toNumber();
+    this.winPrize = this.web3.fromWei(this.contract.getPrize().toNumber(), 'ether');
+    this.winDate = this.formatDate(this.contract.resolutionDate.call().toNumber());
+  }
+
+  getBalance() {
     let balWei = this.web3.eth.getBalance(contractAddress).toNumber();
     let balEther = +this.web3.fromWei(balWei, 'ether');
     this.contractBalance = balEther;
+  }
+
+  getDeployedContract() {
+    let contractFactory = this.web3.eth.contract(BetOnDateInterface.abi);
+    return contractFactory.at(contractAddress);
+  }
+
+  handleEventsFromTheContract() {
+    let gameStateChangedEvent = this.contract.GameStateChanged();
+    gameStateChangedEvent.watch((error, result) => {
+      console.log("GameStateChanged");
+      this.gameState = this.stateAsStr(result.args.state.toNumber());
+      console.log('this.gameState: ', this.gameState);
+      this.getWinData();
+      this.stateUpdateCallback();
+    });
+  }
+
+  /*
+  * Utils
+  * */
+
+  stateAsStr(gameState) {
+    // return 'betsAreOpen';
+    // return 'betsAreClosed';
+    // return 'betsResolved';
+    switch(gameState) {
+      case 0:
+        return 'betsAreOpen';
+      case 1:
+        return 'betsAreClosed';
+      case 2:
+        return 'betsResolved';
+      default:
+        return 'unknown';
+    }
   }
 
   formatDate(dateUnix) {
@@ -136,11 +132,6 @@ class ContractDelegate {
 
   getUnixTimeStamp(date) {
     return Math.floor(date.getTime() / 1000);
-  }
-
-  getDeployedContract() {
-    let contractFactory = this.web3.eth.contract(BetOnDateInterface.abi);
-    return contractFactory.at(contractAddress);
   }
 }
 
