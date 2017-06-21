@@ -1,49 +1,44 @@
 import React from 'react';
 
-class PlaceBets extends React.Component {
+const PlaceBets = ({placeBetStatus}) => {
 
-  setDateInputField(input) {
+  const setDateInputField = (input) => {
     this.dateInputField = input;
-  }
+  };
 
-  setAccountInputField(input) {
+  const setAccountInputField = (input) => {
     this.accountInputField = input;
-  }
+  };
 
-  handleButtonClick() {
+  const handleButtonClick = () => {
     let date = new Date(this.dateInputField.value);
     let acctIndex = +this.accountInputField.value;
     this.props.handlePlaceBet(date, acctIndex);
-  }
+  };
 
-  render() {
+  return (
+    <div>
 
-    let {placeBetStatus} = this.props;
+      <h2>Place Bets</h2>
 
-    return (
-      <div>
+      <p>Select date:</p>
+      <input
+        type="text"
+        defaultValue="1"
+        className="form-control"
+        ref={ref => setAccountInputField(ref)}
+      />
+      <input
+        type="text"
+        defaultValue="July 17, 2017"
+        className="form-control"
+        ref={ref => setDateInputField(ref)}
+      />
 
-        <h2>Place Bets</h2>
-
-        <p>Select date:</p>
-        <input
-          type="text"
-          defaultValue="1"
-          className="form-control"
-          ref={ref => this.setAccountInputField(ref)}
-        />
-        <input
-          type="text"
-          defaultValue="July 17, 2017"
-          className="form-control"
-          ref={ref => this.setDateInputField(ref)}
-        />
-
-        <button type="submit" onClick={(evt) => this.handleButtonClick()}>Place Bet</button>
-        <p>{placeBetStatus}</p>
-      </div>
-    )
-  }
-}
+      <button type="submit" onClick={(evt) => handleButtonClick()}>Place Bet</button>
+      <p>{placeBetStatus}</p>
+    </div>
+  )
+};
 
 export default PlaceBets;

@@ -23,7 +23,7 @@ class ContractDelegate {
     this.contract = this.getDeployedContract();
     // console.log('contract: ', this.contract);
 
-    this.getBasicContractData();
+    this.getContractData();
     this.handleEventsFromTheContract();
 
     new ConsoleUtil(this);
@@ -68,6 +68,12 @@ class ContractDelegate {
 
   withdrawPrize(acctIndex) {
     this.contract.withdrawPrize({from: this.web3.eth.accounts[acctIndex], gas: 2100000});
+  }
+
+  getContractData() {
+    this.getBasicContractData();
+    this.getBalance();
+    this.getWinData();
   }
 
   getBasicContractData() {
