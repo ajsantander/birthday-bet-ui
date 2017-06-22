@@ -1,9 +1,11 @@
 import React from 'react';
+import { Button } from 'react-bootstrap'
 import * as DateUtil from '../utils/DateUtil';
 
 const PlaceBets = ({ placeBetStatus,
                      placeBetSuccess,
                      handlePlaceBet,
+                     unitBet,
                      minDate}) => {
 
   const setDateInputField = (input) => {
@@ -18,23 +20,30 @@ const PlaceBets = ({ placeBetStatus,
   console.log('placeBetSuccess: ', placeBetSuccess);
 
   return (
-    <div className="container">
+    <div className="">
 
-      <h2>Place Bets</h2>
+      <h2>Place your bet</h2>
+
+      <p>Bet value &nbsp;
+      <span className="badge">{unitBet} ETH</span></p>
+
+      <br/>
 
       <div className="form-group">
-        <label>Select date:</label>
+        <label>Pick a date. Winner takes all.</label>
         <input
           type="date"
           defaultValue={DateUtil.dateToStr(minDate, 'yyyy-mm-dd')}
           className="form-control"
           ref={ref => setDateInputField(ref)}
         />
-        <button
-          className="btn btn-default"
+        <br/>
+        <Button
+          bsStyle="primary"
+          bsSize="large"
           type="submit"
           onClick={(evt) => handleButtonClick()}>Place Bet
-        </button>
+        </Button>
       </div>
 
       {placeBetStatus !== undefined &&

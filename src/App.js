@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 
-import Welcome from './components/Welcome';
 import PlaceBets from './components/PlaceBets';
 import BetsClosed from './components/BetsClosed';
 import Winner from './components/Winner';
 import Rules from './components/Rules';
 import HowTo from './components/HowTo';
 import Debug from './components/Debug';
-import Stats from './components/Stats';
+import * as DateUtil from './utils/DateUtil';
 import './css/App.css';
 
 import ContractDelegate from './eth/ContractDelegate';
@@ -107,6 +106,69 @@ class App extends Component {
     return (
       <div className="container">
 
+        <br/>
+
+        {/* HEADER */}
+        <div className="jumbotron">
+          <h1 className="page-title">BirthdayBet</h1>
+          <p className="text-info">On what day will my daughter be born?</p>
+          <p>
+            Yup, I'm supposed to be getting ready for her arrival but instead I'm learning Solidity.
+            Shame on me!
+          </p>
+          <ul className="nav nav-pills" role="tablist">
+            <li role="presentation" className="active">
+              <a href="#">
+                Contract Balance &nbsp;
+                <span className="badge">{this.state.gameBalance} ETH</span>
+              </a>
+            </li>
+            <li role="presentation" className="active">
+              <a href="#">
+                Bets close on &nbsp;
+                <span className="badge">{DateUtil.dateToStr(this.state.lastDayToBet)}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* GAME AREA => PlaceBets || BetsClosed || Winner */}
+        <div className="row">
+          <div className="col-md-8">
+            {(() => {
+              switch(this.state.gameState) {
+                case 'betsAreOpen':
+                  return <PlaceBets
+                    minDate={this.state.lastDayToBet}
+                    placeBetSuccess={this.state.placeBetSuccess}
+                    unitBet={this.state.unitBet}
+                    placeBetStatus={this.state.placeBetStatus}
+                    handlePlaceBet={this.handlePlaceBet}
+                  />;
+                case 'betsAreClosed':
+                  return <BetsClosed/>;
+                case 'betsResolved':
+                  return <Winner
+                    numWinners={this.state.numWinners}
+                    winPrize={this.state.winPrize}
+                    winDate={this.state.winDate}
+                    withdrawPrizeStatus={this.state.withdrawPrizeStatus}
+                    handleWithdrawPrize={this.handleWithdrawPrize}
+                  />;
+                default:
+                  return <br/>;
+              }
+            })()}
+          </div>
+
+          {/* SIDE PANEL */}
+          <div className="col-md-4">
+            <Rules/>
+            <HowTo/>
+          </div>
+        </div>
+
+        {/* DEBUG AREA */}
         {this.DEBUG_MODE &&
         <Debug
           currentContractDate={this.state.currentContractDate}
@@ -117,44 +179,6 @@ class App extends Component {
           handleContractDateChange={this.handleContractDateChange}
           handleResolveDateSet={this.handleResolveDateSet}
         />}
-
-
-        <Welcome/>
-
-        <Stats
-          gameBalance={this.state.gameBalance}
-          unitBet={this.state.unitBet}
-          lastDayToBet={this.state.lastDayToBet}
-        />
-
-        {/* PlaceBets || BetsClosed || Winner */}
-        {(() => {
-          switch(this.state.gameState) {
-            case 'betsAreOpen':
-              return <PlaceBets
-                minDate={this.state.lastDayToBet}
-                placeBetSuccess={this.state.placeBetSuccess}
-                placeBetStatus={this.state.placeBetStatus}
-                handlePlaceBet={this.handlePlaceBet}
-              />;
-            case 'betsAreClosed':
-              return <BetsClosed/>;
-            case 'betsResolved':
-              return <Winner
-                numWinners={this.state.numWinners}
-                winPrize={this.state.winPrize}
-                winDate={this.state.winDate}
-                withdrawPrizeStatus={this.state.withdrawPrizeStatus}
-                handleWithdrawPrize={this.handleWithdrawPrize}
-              />;
-            default:
-              return <br/>;
-          }
-        })()}
-
-        <Rules/>
-
-        <HowTo/>
 
       </div>
     );
