@@ -1,6 +1,10 @@
 import React from 'react';
+import * as DateUtil from '../utils/DateUtil';
 
-const PlaceBets = ({placeBetStatus, handlePlaceBet, minDate}) => {
+const PlaceBets = ({ placeBetStatus,
+                     placeBetSuccess,
+                     handlePlaceBet,
+                     minDate}) => {
 
   const setDateInputField = (input) => {
     this.dateInputField = input;
@@ -11,24 +15,33 @@ const PlaceBets = ({placeBetStatus, handlePlaceBet, minDate}) => {
     handlePlaceBet(date);
   };
 
-  const dateToStr = date => `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${('0' + date.getDate()).slice(-2)}`;
+  console.log('placeBetSuccess: ', placeBetSuccess);
 
   return (
-    <div>
+    <div className="container">
 
       <h2>Place Bets</h2>
 
-      <p>Select date:</p>
+      <div className="form-group">
+        <label>Select date:</label>
+        <input
+          type="date"
+          defaultValue={DateUtil.dateToStr(minDate, 'yyyy-mm-dd')}
+          className="form-control"
+          ref={ref => setDateInputField(ref)}
+        />
+        <button
+          className="btn btn-default"
+          type="submit"
+          onClick={(evt) => handleButtonClick()}>Place Bet
+        </button>
+      </div>
 
-      <input
-        type="date"
-        defaultValue={dateToStr(minDate)}
-        className="form-control"
-        ref={ref => setDateInputField(ref)}
-      />
+      {placeBetStatus !== undefined &&
+      <div className={'alert ' + (placeBetSuccess ? 'alert-success' : 'alert-danger')}>
+        <strong>{placeBetStatus}</strong>
+      </div>}
 
-      <button type="submit" onClick={(evt) => handleButtonClick()}>Place Bet</button>
-      <p>{placeBetStatus}</p>
     </div>
   )
 };

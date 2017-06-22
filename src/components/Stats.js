@@ -1,12 +1,13 @@
 import React from 'react';
-import './Stats.css'
+import './css/Stats.css'
+import * as DateUtil from '../utils/DateUtil';
 
 const Stats = ({unitBet, lastDayToBet, gameBalance}) => {
   return (
-    <div className="stats-container">
+    <div className="container">
       Bet value: {unitBet} ETH   |
-      Total prize: {gameBalance} ETH   |
-      Bets close on: {String(lastDayToBet)}   |
+      Contract Balance: {gameBalance} ETH   |
+      Bets close on: {DateUtil.dateToStr(lastDayToBet)}
     </div>
   )
 };

@@ -1,50 +1,82 @@
 import React from 'react';
-import './Debug.css';
+import './css/Debug.css';
+import * as DateUtil from '../utils/DateUtil';
 
 const Debug = ({ accounts,
                  accountIdx,
                  handleAccountSelect,
                  handleContractDateChange,
-                 currentContractDate }) => {
+                 currentContractDate,
+                 lastDayToBet,
+                 handleResolveDateSet }) => {
 
-  const dateToStr = date => `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${('0' + date.getDate()).slice(-2)}`;
-
-  const setDateInputField = (input) => {
-    this.dateInputField = input;
+  const setContractDateInputField = (input) => {
+    this.contractDateInputField = input;
   };
 
-  const handleButtonClick = () => {
-    let date = new Date(this.dateInputField.value);
+  const setResolveDateInputField = (input) => {
+    this.resolveDateInputField = input;
+  };
+
+  const handleTimeTravelButtonClick = () => {
+    let date = new Date(this.contractDateInputField.value);
     handleContractDateChange(date);
   };
 
+  const handleResolveButtonClick = () => {
+    let date = new Date(this.resolveDateInputField.value);
+    handleResolveDateSet(date);
+  };
+
   return (
-    <div className="debug-container">
+    <div>
+      <div className="debug-container">
 
-      <h3>DebugPanel</h3>
+        <h4>DebugPanel</h4>
 
-      <form>
-        Account:
-        <select onChange={(event) => handleAccountSelect(event.target.value)} defaultValue={accountIdx}>
-          {accounts.map((account, index) => {
-            return <option value={index} key={index}>account {index}: {account}</option>
-          })}
-        </select>
-      </form>
+        {/* SELECT ACCOUNT */}
+        <form className="">
+          <label>Account:</label>
+          <select
+            className=""
+            onChange={(event) => handleAccountSelect(event.target.value)} defaultValue={accountIdx}>
+            {accounts.map((account, index) => {
+              return <option value={index} key={index}>account {index}: {account}</option>
+            })}
+          </select>
+        </form>
 
+        {/* TIME TRAVEL */}
+        <div className="">
+          <label>Contract date:</label>
+          <input
+            className=""
+            type="date"
+            defaultValue={DateUtil.dateToStr(currentContractDate, 'yyyy-mm-dd')}
+            ref={ref => setContractDateInputField(ref)}
+          />
+          <button
+            type="submit"
+            className=""
+            onClick={(evt) => handleTimeTravelButtonClick()}>Time Travel</button>
+        </div>
+
+        {/* RESOLVE */}
+        <div className="">
+          <label>Resolve:</label>
+          <input
+            className=""
+            type="date"
+            defaultValue={DateUtil.dateToStr(lastDayToBet, 'yyyy-mm-dd')}
+            ref={ref => setResolveDateInputField(ref)}
+          />
+          <button
+            type="submit"
+            className=""
+            onClick={(evt) => handleResolveButtonClick()}>Resolve Game</button>
+        </div>
+      </div>
       <br/>
-
-      <form>
-        Contract date:
-        <input
-          type="date"
-          defaultValue={dateToStr(currentContractDate)}
-          ref={ref => setDateInputField(ref)}
-        />
-      </form>
-
-      <button type="submit" onClick={(evt) => handleButtonClick()}>Time Travel</button>
-
     </div>
   )
 };

@@ -8,7 +8,7 @@ import Rules from './components/Rules';
 import HowTo from './components/HowTo';
 import Debug from './components/Debug';
 import Stats from './components/Stats';
-import './App.css';
+import './css/App.css';
 
 import ContractDelegate from './eth/ContractDelegate';
 
@@ -22,6 +22,7 @@ class App extends Component {
     this.handleWithdrawPrize = this.handleWithdrawPrize.bind(this);
     this.handleAccountSelect = this.handleAccountSelect.bind(this);
     this.handleContractDateChange = this.handleContractDateChange.bind(this);
+    this.handleResolveDateSet = this.handleResolveDateSet.bind(this);
 
     // *********************
     this.DEBUG_MODE = true;
@@ -32,9 +33,11 @@ class App extends Component {
       lastDayToBet: 0,
       gameState: -1,
       gameBalance: 0,
+      placeBetSuccess: false,
       placeBetStatus: '',
       accounts: [],
-      activeAccountIdx: 0
+      activeAccountIdx: 0,
+      withdrawPrizeStatus: ''
     };
 
     // Init contract delegate.
@@ -55,19 +58,25 @@ class App extends Component {
       lastDayToBet: this.contractDelegate.lastDayToBet,
       gameState: this.contractDelegate.gameState,
       gameBalance: this.contractDelegate.contractBalance,
+      placeBetSuccess: this.contractDelegate.placeBetSuccess,
       placeBetStatus: this.contractDelegate.placeBetStatus,
       numWinners: String(this.contractDelegate.numWinners),
       winPrize: String(this.contractDelegate.winPrize),
-      winDate: String(this.contractDelegate.winDate),
+      winDate: this.contractDelegate.winDate,
       accounts: this.contractDelegate.accounts,
       activeAccountIdx: this.contractDelegate.activeAccountIdx,
-      currentContractDate: this.contractDelegate.currentDate
+      currentContractDate: this.contractDelegate.currentDate,
+      withdrawPrizeStatus: this.contractDelegate.withdrawPrizeStatus
     });
   }
 
   /*
   * From components
   * */
+
+  handleResolveDateSet(date) {
+    this.contractDelegate.resolveGame(date);
+  }
 
   handleContractDateChange(date) {
     this.contractDelegate.changeDate(date);
@@ -95,59 +104,58 @@ class App extends Component {
   }
 
   render() {
+    return (
+      <div className="container">
 
-    // Which view to show depending on contract game state.
-    let activeState;
-    switch(this.state.gameState) {
-      case 'betsAreOpen':
-        activeState =
-          <PlaceBets
-            minDate={this.state.lastDayToBet}
-            placeBetStatus={this.state.placeBetStatus}
-            handlePlaceBet={this.handlePlaceBet}
-          />;
-        break;
-      case 'betsAreClosed':
-        activeState = <BetsClosed/>;
-        break;
-      case 'betsResolved':
-        activeState =
-          <Winner
-            numWinners={this.state.numWinners}
-            winPrize={this.state.winPrize}
-            winDate={this.state.winDate}
-            handleWithdrawPrize={this.handleWithdrawPrize}
-          />;
-        break;
-      default:
-        activeState = <p></p>;
-    }
-
-    // Show debug panel?
-    let debug;
-    if(this.DEBUG_MODE) {
-      debug =
+        {this.DEBUG_MODE &&
         <Debug
           currentContractDate={this.state.currentContractDate}
+          lastDayToBet={this.state.lastDayToBet}
           accounts={this.state.accounts}
           activeAccountIdx={this.state.activeAccountIdx}
           handleAccountSelect={this.handleAccountSelect}
           handleContractDateChange={this.handleContractDateChange}
-        />;
-    }
+          handleResolveDateSet={this.handleResolveDateSet}
+        />}
 
-    return (
-      <div className="container">
-        {debug}
+
         <Welcome/>
+
         <Stats
           gameBalance={this.state.gameBalance}
           unitBet={this.state.unitBet}
           lastDayToBet={this.state.lastDayToBet}
         />
-        {activeState}
+
+        {/* PlaceBets || BetsClosed || Winner */}
+        {(() => {
+          switch(this.state.gameState) {
+            case 'betsAreOpen':
+              return <PlaceBets
+                minDate={this.state.lastDayToBet}
+                placeBetSuccess={this.state.placeBetSuccess}
+                placeBetStatus={this.state.placeBetStatus}
+                handlePlaceBet={this.handlePlaceBet}
+              />;
+            case 'betsAreClosed':
+              return <BetsClosed/>;
+            case 'betsResolved':
+              return <Winner
+                numWinners={this.state.numWinners}
+                winPrize={this.state.winPrize}
+                winDate={this.state.winDate}
+                withdrawPrizeStatus={this.state.withdrawPrizeStatus}
+                handleWithdrawPrize={this.handleWithdrawPrize}
+              />;
+            default:
+              return <br/>;
+          }
+        })()}
+
         <Rules/>
+
         <HowTo/>
+
       </div>
     );
   }
