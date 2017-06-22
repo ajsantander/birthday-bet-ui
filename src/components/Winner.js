@@ -1,18 +1,14 @@
 import React from 'react';
+import './Winner.css';
 
-const Winner = ({numWinners, winPrize, winDate}) => {
-
-  const setAccountInputField = (input) => {
-    this.accountInputField = input;
-  };
+const Winner = ({numWinners, winPrize, winDate, handleWithdrawPrize}) => {
 
   const handleButtonClick = () => {
-    const acctIndex = +this.accountInputField.value;
-    this.props.handleWithdrawPrize(acctIndex);
+    handleWithdrawPrize();
   };
 
   return (
-    <div>
+    <div className="container-winner">
 
       <h2>And the winner is!</h2>
 
@@ -20,13 +16,6 @@ const Winner = ({numWinners, winPrize, winDate}) => {
       <p>Winners: {numWinners}</p>
       <p>Each winner gets: {winPrize} ETH</p>
       <p>Note: This game doesn't send prizes to the winners, each winner needs to withdraw the prize.</p>
-
-      <input
-        type="text"
-        defaultValue="1"
-        className="form-control"
-        ref={ref => setAccountInputField(ref)}
-      />
 
       <button onClick={(evt) => handleButtonClick()}>Withdraw Prize!</button>
     </div>

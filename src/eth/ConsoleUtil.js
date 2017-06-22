@@ -16,6 +16,10 @@ class ConsoleUtil {
       return balEther;
     };
 
+    window.getDate = function() {
+      console.log(contractDelegate.contract.getTime().toNumber());
+    };
+
     window.skipToDate = function(date) {
       let dateUnix = contractDelegate.getUnixTimeStamp(date);
       contractDelegate.contract.setTime(dateUnix, {from: contractDelegate.web3.eth.accounts[0]});

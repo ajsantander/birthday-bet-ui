@@ -3,12 +3,14 @@ import ConsoleUtil from './ConsoleUtil';
 import BetOnDateInterface from './BetOnDate.json';
 
 /* **************************************************************** */
-let contractAddress = '0x3607766a696519283c9ce489199d417326e1efb8';
+/* **************************************************************** */
+let contractAddress = '0x12272bd960718b4ae2ecd343ab756042b01e1cb7';
+/* **************************************************************** */
 /* **************************************************************** */
 
 class ContractDelegate {
 
-  constructor(stateUpdateCallback) {
+  constructor(stateUpdateCallback, debug) {
 
     console.log('ContractDelegate');
     this.stateUpdateCallback = stateUpdateCallback;
@@ -23,21 +25,24 @@ class ContractDelegate {
     this.contract = this.getDeployedContract();
     // console.log('contract: ', this.contract);
 
+    this.getNodeData();
     this.getContractData();
     this.handleEventsFromTheContract();
 
-    new ConsoleUtil(this);
+    if(debug) {
+      new ConsoleUtil(this);
+    }
   }
 
   /*
   * Interact with contract
   * */
 
-  placeBet(date, acctIndex) {
+  placeBet(date) {
 
     console.log('ContractManager - placeBet()');
 
-    let account = this.web3.eth.accounts[acctIndex];
+    let account = this.web3.eth.accounts[this.activeAccountIdx];
     console.log('account: ', account);
 
     let betDateUnix = this.getUnixTimeStamp(date);
@@ -62,12 +67,37 @@ class ContractDelegate {
 
     this.getBalance();
 
-    // Feedback.
     this.stateUpdateCallback();
   }
 
-  withdrawPrize(acctIndex) {
-    this.contract.withdrawPrize({from: this.web3.eth.accounts[acctIndex], gas: 2100000});
+  withdrawPrize() {
+    this.contract.withdrawPrize({from: this.web3.eth.accounts[this.activeAccountIdx], gas: 2100000});
+  }
+
+  handleEventsFromTheContract() {
+    let gameStateChangedEvent = this.contract.GameStateChanged();
+    gameStateChangedEvent.watch((error, result) => {
+      console.log("GameStateChanged");
+      this.gameState = this.stateAsStr(result.args.state.toNumber());
+      console.log('this.gameState: ', this.gameState);
+      this.getWinData();
+      this.stateUpdateCallback();
+    });
+  }
+
+  changeDate(date) {
+    console.log('travel to date: ', date);
+    let dateUnix = this.getUnixTimeStamp(date);
+    this.contract.setTime(dateUnix, {from: this.web3.eth.accounts[0]});
+  }
+
+  /*
+  * Get data from the contract/blockchain
+  * */
+
+  getNodeData() {
+    this.activeAccountIdx = 0;
+    this.accounts = this.web3.eth.accounts;
   }
 
   getContractData() {
@@ -77,6 +107,7 @@ class ContractDelegate {
   }
 
   getBasicContractData() {
+    this.currentDate = this.formatDate(this.contract.getTime().toNumber());
     this.unitBet = this.web3.fromWei(this.contract.unitBet.call().toNumber(), 'ether');
     this.lastDayToBet = this.formatDate(this.contract.lastDayToBet.call().toNumber());
     this.gameState = this.stateAsStr(this.contract.currentGameState.call().toNumber());
@@ -84,6 +115,9 @@ class ContractDelegate {
   }
 
   getWinData() {
+    if(this.gameState !== this.stateAsStr(2)) {
+      return;
+    }
     this.numWinners = this.contract.numWinners.call().toNumber();
     this.winPrize = this.web3.fromWei(this.contract.getPrize().toNumber(), 'ether');
     this.winDate = this.formatDate(this.contract.resolutionDate.call().toNumber());
@@ -98,17 +132,6 @@ class ContractDelegate {
   getDeployedContract() {
     let contractFactory = this.web3.eth.contract(BetOnDateInterface.abi);
     return contractFactory.at(contractAddress);
-  }
-
-  handleEventsFromTheContract() {
-    let gameStateChangedEvent = this.contract.GameStateChanged();
-    gameStateChangedEvent.watch((error, result) => {
-      console.log("GameStateChanged");
-      this.gameState = this.stateAsStr(result.args.state.toNumber());
-      console.log('this.gameState: ', this.gameState);
-      this.getWinData();
-      this.stateUpdateCallback();
-    });
   }
 
   /*

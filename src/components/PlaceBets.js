@@ -1,20 +1,17 @@
 import React from 'react';
 
-const PlaceBets = ({placeBetStatus}) => {
+const PlaceBets = ({placeBetStatus, handlePlaceBet, minDate}) => {
 
   const setDateInputField = (input) => {
     this.dateInputField = input;
   };
 
-  const setAccountInputField = (input) => {
-    this.accountInputField = input;
-  };
-
   const handleButtonClick = () => {
     let date = new Date(this.dateInputField.value);
-    let acctIndex = +this.accountInputField.value;
-    this.props.handlePlaceBet(date, acctIndex);
+    handlePlaceBet(date);
   };
+
+  const dateToStr = date => `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${('0' + date.getDate()).slice(-2)}`;
 
   return (
     <div>
@@ -22,15 +19,10 @@ const PlaceBets = ({placeBetStatus}) => {
       <h2>Place Bets</h2>
 
       <p>Select date:</p>
+
       <input
-        type="text"
-        defaultValue="1"
-        className="form-control"
-        ref={ref => setAccountInputField(ref)}
-      />
-      <input
-        type="text"
-        defaultValue="July 17, 2017"
+        type="date"
+        defaultValue={dateToStr(minDate)}
         className="form-control"
         ref={ref => setDateInputField(ref)}
       />

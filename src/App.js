@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
+
 import Welcome from './components/Welcome';
 import PlaceBets from './components/PlaceBets';
 import BetsClosed from './components/BetsClosed';
 import Winner from './components/Winner';
 import Rules from './components/Rules';
 import HowTo from './components/HowTo';
-import ContractDelegate from './eth/ContractDelegate';
-import './App.css';
+import Debug from './components/Debug';
 import Stats from './components/Stats';
+import './App.css';
+
+import ContractDelegate from './eth/ContractDelegate';
 
 class App extends Component {
 
@@ -17,52 +20,89 @@ class App extends Component {
     this.handleContractStateUpdate = this.handleContractStateUpdate.bind(this);
     this.handlePlaceBet = this.handlePlaceBet.bind(this);
     this.handleWithdrawPrize = this.handleWithdrawPrize.bind(this);
+    this.handleAccountSelect = this.handleAccountSelect.bind(this);
+    this.handleContractDateChange = this.handleContractDateChange.bind(this);
+
+    // *********************
+    this.DEBUG_MODE = true;
+    // *********************
 
     this.state = {
       unitBet: 0,
       lastDayToBet: 0,
       gameState: -1,
       gameBalance: 0,
-      placeBetStatus: ''
+      placeBetStatus: '',
+      accounts: [],
+      activeAccountIdx: 0
     };
 
+    // Init contract delegate.
     this.contractDelegate = new ContractDelegate(
-      this.handleContractStateUpdate
+      this.handleContractStateUpdate,
+      this.DEBUG_MODE
     );
   }
 
-  componentWillMount() {
-    this.handleContractStateUpdate();
-  }
+  /*
+  * From the contract
+  * */
 
+  // Updates from the contract delegate.
   handleContractStateUpdate() {
     this.setState({
       unitBet: String(this.contractDelegate.unitBet),
-      lastDayToBet: String(this.contractDelegate.lastDayToBet),
+      lastDayToBet: this.contractDelegate.lastDayToBet,
       gameState: this.contractDelegate.gameState,
       gameBalance: this.contractDelegate.contractBalance,
       placeBetStatus: this.contractDelegate.placeBetStatus,
       numWinners: String(this.contractDelegate.numWinners),
       winPrize: String(this.contractDelegate.winPrize),
-      winDate: String(this.contractDelegate.winDate)
+      winDate: String(this.contractDelegate.winDate),
+      accounts: this.contractDelegate.accounts,
+      activeAccountIdx: this.contractDelegate.activeAccountIdx,
+      currentContractDate: this.contractDelegate.currentDate
     });
   }
 
-  handlePlaceBet(date, acctIndex) {
-    this.contractDelegate.placeBet(date, acctIndex);
+  /*
+  * From components
+  * */
+
+  handleContractDateChange(date) {
+    this.contractDelegate.changeDate(date);
   }
 
-  handleWithdrawPrize(acctIndex) {
-    this.contractDelegate.withdrawPrize(acctIndex);
+  handleAccountSelect(accountIdx) {
+    this.contractDelegate.activeAccountIdx = accountIdx;
+    this.setState({activeAccountIdx: this.contractDelegate.activeAccountIdx});
+  }
+
+  handlePlaceBet(date) {
+    this.contractDelegate.placeBet(date);
+  }
+
+  handleWithdrawPrize() {
+    this.contractDelegate.withdrawPrize();
+  }
+
+  /*
+  * React Lifecycle
+  * */
+
+  componentWillMount() {
+    this.handleContractStateUpdate();
   }
 
   render() {
 
+    // Which view to show depending on contract game state.
     let activeState;
     switch(this.state.gameState) {
       case 'betsAreOpen':
         activeState =
           <PlaceBets
+            minDate={this.state.lastDayToBet}
             placeBetStatus={this.state.placeBetStatus}
             handlePlaceBet={this.handlePlaceBet}
           />;
@@ -83,9 +123,22 @@ class App extends Component {
         activeState = <p></p>;
     }
 
+    // Show debug panel?
+    let debug;
+    if(this.DEBUG_MODE) {
+      debug =
+        <Debug
+          currentContractDate={this.state.currentContractDate}
+          accounts={this.state.accounts}
+          activeAccountIdx={this.state.activeAccountIdx}
+          handleAccountSelect={this.handleAccountSelect}
+          handleContractDateChange={this.handleContractDateChange}
+        />;
+    }
+
     return (
       <div className="container">
-
+        {debug}
         <Welcome/>
         <Stats
           gameBalance={this.state.gameBalance}
