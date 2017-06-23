@@ -30,6 +30,7 @@ const Debug = ({ accounts,
 
   return (
     <div>
+      <br/>
       <div className="debug-container">
 
         <h4>DebugPanel</h4>
@@ -76,7 +77,6 @@ const Debug = ({ accounts,
             onClick={(evt) => handleResolveButtonClick()}>Resolve Game</button>
         </div>
       </div>
-      <br/>
     </div>
   )
 };

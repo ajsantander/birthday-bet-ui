@@ -5,7 +5,7 @@ import * as DateUtil from '../utils/DateUtil';
 
 /* **************************************************************** */
 /* **************************************************************** */
-let contractAddress = '0x85c2814f2fce9d90d96c9a8ac7d0494e60c7553c';
+let contractAddress = '0xb2df74e4dacc631b2db599986f22c548f8940b51';
 /* **************************************************************** */
 /* **************************************************************** */
 
@@ -64,6 +64,7 @@ class ContractDelegate {
 
     // Place bet.
     if(success) {
+      this.betDate = date;
       this.contract.placeBet(betDateUnix, {from:account, value:betValueWei});
     }
 
@@ -86,7 +87,7 @@ class ContractDelegate {
     let results = this.contract.validatePrizeWithdrawal.call(
       {from: account}
     );
-    let success = results[0] === 'true';
+    let success = results[0];
     let msg = this.web3.toAscii(results[1]);
     console.log('  success: ', success);
     console.log('  msg: ', msg);
@@ -118,9 +119,26 @@ class ContractDelegate {
     this.contract.setTime(dateUnix, {from: this.web3.eth.accounts[0]});
   }
 
+  changeActiveAccount(idx) {
+    this.activeAccountIdx = idx;
+    this.getPlayerData();
+    this.stateUpdateCallback();
+  }
+
   /*
   * Get data from the contract/blockchain
   * */
+
+  getPlayerData() {
+    const unixDate = this.contract.getPlayerBetDate(this.web3.eth.accounts[this.activeAccountIdx]).toNumber();
+    if(unixDate !== 0) {
+      this.betDate = DateUtil.unixToDate(unixDate);
+      console.log('player bet: ', this.betDate);
+    }
+    else {
+      this.betDate = undefined;
+    }
+  }
 
   getNodeData() {
     this.activeAccountIdx = 0;

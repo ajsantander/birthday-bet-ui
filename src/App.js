@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import PlaceBets from './components/PlaceBets';
+import BetPlaced from './components/BetPlaced';
 import BetsClosed from './components/BetsClosed';
 import Winner from './components/Winner';
 import Rules from './components/Rules';
@@ -36,7 +37,8 @@ class App extends Component {
       placeBetStatus: '',
       accounts: [],
       activeAccountIdx: 0,
-      withdrawPrizeStatus: ''
+      withdrawPrizeStatus: '',
+      betDate: 0
     };
 
     // Init contract delegate.
@@ -65,7 +67,8 @@ class App extends Component {
       accounts: this.contractDelegate.accounts,
       activeAccountIdx: this.contractDelegate.activeAccountIdx,
       currentContractDate: this.contractDelegate.currentDate,
-      withdrawPrizeStatus: this.contractDelegate.withdrawPrizeStatus
+      withdrawPrizeStatus: this.contractDelegate.withdrawPrizeStatus,
+      betDate: this.contractDelegate.betDate
     });
   }
 
@@ -82,7 +85,7 @@ class App extends Component {
   }
 
   handleAccountSelect(accountIdx) {
-    this.contractDelegate.activeAccountIdx = accountIdx;
+    this.contractDelegate.changeActiveAccount(accountIdx);
     this.setState({activeAccountIdx: this.contractDelegate.activeAccountIdx});
   }
 
@@ -103,6 +106,10 @@ class App extends Component {
   }
 
   render() {
+
+    const daysLeft = DateUtil.deltaDays(new Date(), this.state.lastDayToBet);
+    const daysLeftStr = daysLeft == 1 ? `${daysLeft} day` : `${daysLeft} days`;
+
     return (
       <div className="container">
 
@@ -110,26 +117,24 @@ class App extends Component {
 
         {/* HEADER */}
         <div className="jumbotron">
+
           <h1 className="page-title">BirthdayBet</h1>
-          <p className="text-info">On what day will my daughter be born?</p>
           <p>
-            Yup, I'm supposed to be getting ready for her arrival but instead I'm learning Solidity.
-            Shame on me!
+            My daughter is scheduled for natural birth on July 15th... Plus or minus 2 weeks.
+            What day will it be?
           </p>
-          <ul className="nav nav-pills" role="tablist">
-            <li role="presentation" className="active">
-              <a href="#">
-                Contract Balance &nbsp;
-                <span className="badge">{this.state.gameBalance} ETH</span>
-              </a>
-            </li>
-            <li role="presentation" className="active">
-              <a href="#">
-                Bets close on &nbsp;
-                <span className="badge">{DateUtil.dateToStr(this.state.lastDayToBet)}</span>
-              </a>
-            </li>
-          </ul>
+
+          {/* STATS */}
+          <h2>
+            <span className="label label-info">
+              Jackpot &nbsp;
+              <span className="badge">{this.state.gameBalance} ETH</span>
+            </span>
+            &nbsp;
+            <span className={`label label-${daysLeft < 3 ? 'danger' : 'warning'}`}>
+              Bets close in {daysLeftStr}
+            </span>
+          </h2>
         </div>
 
         {/* GAME AREA => PlaceBets || BetsClosed || Winner */}
@@ -138,13 +143,22 @@ class App extends Component {
             {(() => {
               switch(this.state.gameState) {
                 case 'betsAreOpen':
-                  return <PlaceBets
-                    minDate={this.state.lastDayToBet}
-                    placeBetSuccess={this.state.placeBetSuccess}
-                    unitBet={this.state.unitBet}
-                    placeBetStatus={this.state.placeBetStatus}
-                    handlePlaceBet={this.handlePlaceBet}
-                  />;
+                  if(this.state.betDate) {
+                    return <BetPlaced
+                        minDate={this.state.lastDayToBet}
+                        betDate={this.state.betDate}
+                      />;
+                  }
+                  else {
+                    return <PlaceBets
+                      gameBalance={this.state.gameBalance}
+                      minDate={this.state.lastDayToBet}
+                      placeBetSuccess={this.state.placeBetSuccess}
+                      unitBet={this.state.unitBet}
+                      placeBetStatus={this.state.placeBetStatus}
+                      handlePlaceBet={this.handlePlaceBet}
+                    />;
+                  }
                 case 'betsAreClosed':
                   return <BetsClosed/>;
                 case 'betsResolved':

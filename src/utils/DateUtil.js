@@ -6,6 +6,12 @@ export function dateToStr(date, format = '') {
   return `${month}-${day}-${year}`;
 }
 
+export function deltaDays(date1, date2) {
+  let d1 = dateToUnix(date1);
+  let d2 = dateToUnix(date2);
+  return Math.floor((d2 - d1) / 86400); // 86400 seconds in a day
+}
+
 export function unixToDate(dateUnix) {
   return new Date(dateUnix * 1000);
 }

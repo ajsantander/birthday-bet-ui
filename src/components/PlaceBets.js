@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from 'react-bootstrap'
+import { Button } from 'react-bootstrap';
 import * as DateUtil from '../utils/DateUtil';
 
 const PlaceBets = ({ placeBetStatus,
@@ -22,22 +22,31 @@ const PlaceBets = ({ placeBetStatus,
   return (
     <div className="">
 
-      <h2>Place your bet</h2>
-
-      <p>Bet value &nbsp;
-      <span className="badge">{unitBet} ETH</span></p>
-
-      <br/>
+      <h2>Pick a date. Winner takes all.</h2>
 
       <div className="form-group">
-        <label>Pick a date. Winner takes all.</label>
+
+        {/* INFO */}
+        <h3>
+          <span className="label label-default">
+            Bet value &nbsp;
+            <span className="badge">{unitBet} ETH</span>
+          </span>
+        </h3>
+
+        {/* DATE PICKER */}
         <input
           type="date"
           defaultValue={DateUtil.dateToStr(minDate, 'yyyy-mm-dd')}
           className="form-control"
           ref={ref => setDateInputField(ref)}
         />
+        *YOU CAN ONLY BET ONCE, AND YOU CANNOT CHANGE YOUR BET*
+
         <br/>
+        <br/>
+
+        {/* PLACE BET */}
         <Button
           bsStyle="primary"
           bsSize="large"
@@ -46,8 +55,9 @@ const PlaceBets = ({ placeBetStatus,
         </Button>
       </div>
 
-      {placeBetStatus !== undefined &&
-      <div className={'alert ' + (placeBetSuccess ? 'alert-success' : 'alert-danger')}>
+      {/* ERROR FEEDBACK */}
+      {placeBetSuccess == false && placeBetStatus !== undefined &&
+      <div className='alert alert-danger'>
         <strong>{placeBetStatus}</strong>
       </div>}
 
