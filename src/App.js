@@ -22,7 +22,15 @@ class App extends Component {
     this.handleResolveDateSet = this.handleResolveDateSet.bind(this);
 
     // *********************
-    this.DEBUG_MODE = true;
+    // *********************
+    // *********************
+    this.DEBUG_MODE = false;
+    // if true, it will:
+    // 1) use a local web3 instance connected to a testrpc blockhain
+    //    instead of an injected web3 (like metamask).
+    // 2) display a debugging console that can be used to fully simulate games with a testrpc running.
+    // *********************
+    // *********************
     // *********************
 
     // Init contract delegate.
@@ -30,6 +38,8 @@ class App extends Component {
       this.handleContractStateUpdate,
       this.DEBUG_MODE
     );
+
+    this.state = {};
   }
 
   /*
@@ -88,13 +98,13 @@ class App extends Component {
   * React Lifecycle
   * */
 
-  componentWillMount() {
-    this.handleContractStateUpdate();
+  componentDidMount() {
+    this.contractDelegate.initialize();
   }
 
   render() {
 
-    const betsAreOpen = this.state.gameState === 'betsAreOpen';
+    const betsAreOpen = this.state.gameState && this.state.gameState === 'betsAreOpen';
     const daysLeft = betsAreOpen ? DateUtil.deltaDays(new Date(), this.state.lastDayToBet) : 0;
     const daysLeftStr = daysLeft === 1 ? `${daysLeft} day` : `${daysLeft} days`;
 

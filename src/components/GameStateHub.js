@@ -4,6 +4,7 @@ import PlaceBets from './gamestates/PlaceBets';
 import BetPlaced from './gamestates/BetPlaced';
 import BetsClosed from './gamestates/BetsClosed';
 import Winner from './gamestates/Winner';
+import NoChain from './info/NoChain';
 
 const GameStateHub = ({ gameState,
                         betDate,
@@ -65,7 +66,7 @@ const GameStateHub = ({ gameState,
             />;
 
           default:
-            return <br/>;
+            return <NoChain/>;
         }
       })()}
     </div>

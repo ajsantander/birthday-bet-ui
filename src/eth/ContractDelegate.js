@@ -10,21 +10,33 @@ class ContractDelegate {
     // This callback will be executed each time there is an
     // update from the contract.
     this.stateUpdateCallback = stateUpdateCallback;
-
-    // Init web3.
-    let provider = new Web3.providers.HttpProvider('http://localhost:8545');
-    let web3 = new Web3(provider);
-    this.web3 = web3;
-    console.log('accounts: ', this.web3.eth.accounts);
+    this.deug = debug;
 
     // Default state.
     this.currentDate = new Date();
     this.lastDayToBet = new Date();
     this.betDate = undefined;
+    this.gameState = undefined;
+  }
+
+  initialize() {
+
+    // Init web3.
+    if(!this.debug && window.web3 && typeof window.web3 !== undefined) {
+      console.log('ContractDelegate - using web3 form external source.');
+      this.web3 = window.web3;
+    }
+    else {
+      console.log('ContractDelegate - using testrpc web3.');
+      let provider = new Web3.providers.HttpProvider('http://localhost:8545');
+      let web3 = new Web3(provider);
+      this.web3 = web3;
+    }
+    console.log('accounts: ', this.web3.eth.accounts);
 
     // Retrieve contract.
     this.contract = Truffle(BetOnDateArtifacts);
-    this.contract.setProvider(provider);
+    this.contract.setProvider(this.web3.currentProvider);
 
     // Refresh state.
     this.getNodeData();
@@ -37,18 +49,33 @@ class ContractDelegate {
    * Get data from the contract/blockchain
    * */
 
+  getContract() {
+    // return this.contract.deployed();
+    return this.contract.at('0xe089a5e7d3b804666a12c778fd22e4d80d4ad494');
+    // return this.contract.at('0xe5f3f89a7e90bf5ea69fcdcebc0835f483637f4b');
+  }
+
   getPlayerData() {
 
-    const account = this.web3.eth.accounts[this.activeAccountIdx];
+    console.log('ContractDelegate - getPlayerData()');
+
+    const account = this.getAccountAtIndex(this.activeAccountIdx);
+    console.log('account: ', account);
 
     // Account balance.
-    let balWei = this.web3.eth.getBalance(account).toNumber();
-    this.playerBalance = +this.web3.fromWei(balWei, 'ether');
+    this.web3.eth.getBalance(account, (error, result) => {
+      if(!error) {
+        console.log('result: ', result);
+        this.playerBalance = +this.web3.fromWei(result.toNumber(), 'ether');
+        this.stateUpdateCallback();
+      }
+      else { console.log(error) }
+    });
 
     // Bet date.
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
-      return this.contract.instance.getPlayerBetDate(this.web3.eth.accounts[this.activeAccountIdx]);
+      return this.contract.instance.getPlayerBetDate(account);
     }).then((unixDate) => {
       let date = unixDate.toNumber();
       if(date !== 0) {
@@ -77,7 +104,7 @@ class ContractDelegate {
 
   getBasicContractData() {
     console.log('ContractManager - getBasicContractDate()');
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contractAddress = instance.address;
       console.log('this.contractAddress: ', this.contractAddress);
       this.contract.instance = instance;
@@ -111,7 +138,7 @@ class ContractDelegate {
     // Avoid getting win data if game is not resolved.
     if(this.gameState !== this.stateAsStr(2)) { return; }
 
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
       return this.contract.instance.numWinners.call();
     }).then(numWinners => {
@@ -131,7 +158,7 @@ class ContractDelegate {
 
   getBalance() {
     console.log('ContractManager - getBalance()');
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contractAddress = instance.address;
       let balWei = this.web3.eth.getBalance(this.contractAddress, () => {
         this.contractBalance = +this.web3.fromWei(balWei, 'ether');
@@ -149,14 +176,14 @@ class ContractDelegate {
 
     console.log('ContractManager - placeBet()');
 
-    let account = this.web3.eth.accounts[this.activeAccountIdx];
+    let account = this.getAccountAtIndex(this.activeAccountIdx);
     console.log('account: ', account);
 
     let betDateUnix = DateUtil.dateToUnix(date);
     let betValueWei = this.web3.toWei(this.unitBet, 'ether');
 
     // Validate bet.
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
       return this.contract.instance.validateBet.call(
         betDateUnix,
@@ -186,7 +213,7 @@ class ContractDelegate {
   resolveGame(date) {
     console.log('ContractManager - resolveGame()');
     let dateUnix = DateUtil.dateToUnix(date);
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
       // TODO: define gas
       return this.contract.instance.resolve(dateUnix, {from: this.web3.eth.accounts[0], gas: 2100000});
@@ -200,10 +227,10 @@ class ContractDelegate {
 
     console.log('ContractManager - withdrawPrize()');
 
-    let account = this.web3.eth.accounts[this.activeAccountIdx];
+    let account = this.getAccountAtIndex(this.activeAccountIdx);
 
     // Validate withdrawal.
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
       return this.contract.instance.validatePrizeWithdrawal.call({from: account});
     }).then((results) => {
@@ -231,7 +258,7 @@ class ContractDelegate {
   changeDate(date) {
     console.log('ContractDelegate - travel to date: ', date);
     let dateUnix = DateUtil.dateToUnix(date);
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
       return this.contract.instance.setTime(dateUnix, {from: this.web3.eth.accounts[0]});
     }).then(() => {
@@ -247,7 +274,7 @@ class ContractDelegate {
   }
 
   handleEventsFromTheContract() {
-    this.contract.deployed().then(instance => {
+    this.getContract().then(instance => {
       this.contract.instance = instance;
       let gameStateChangedEvent = this.contract.instance.GameStateChanged();
       gameStateChangedEvent.watch((error, result) => {
@@ -269,7 +296,16 @@ class ContractDelegate {
       case 0: return 'betsAreOpen';
       case 1: return 'betsAreClosed';
       case 2: return 'betsResolved';
-      default: return 'unknown';
+      default: return undefined;
+    }
+  }
+
+  getAccountAtIndex(index) {
+    if(this.debug) {
+      return this.web3.eth.accounts[index];
+    }
+    else {
+      return this.web3.eth.accounts[0] || this.web3.eth.coinbase;
     }
   }
 }
