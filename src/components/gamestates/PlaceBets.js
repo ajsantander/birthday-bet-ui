@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
-import * as DateUtil from '../utils/DateUtil';
+import * as DateUtil from '../../utils/DateUtil';
 
 const PlaceBets = ({ placeBetStatus,
                      placeBetSuccess,
@@ -16,8 +16,6 @@ const PlaceBets = ({ placeBetStatus,
     let date = new Date(this.dateInputField.value);
     handlePlaceBet(date);
   };
-
-  console.log('placeBetSuccess: ', placeBetSuccess);
 
   return (
     <div className="">
@@ -56,7 +54,7 @@ const PlaceBets = ({ placeBetStatus,
       </div>
 
       {/* ERROR FEEDBACK */}
-      {placeBetSuccess == false && placeBetStatus !== undefined &&
+      {placeBetSuccess === false && placeBetStatus !== undefined &&
       <div className='alert alert-danger'>
         <strong>{placeBetStatus}</strong>
       </div>}

@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 
-import PlaceBets from './components/PlaceBets';
-import BetPlaced from './components/BetPlaced';
-import BetsClosed from './components/BetsClosed';
-import Winner from './components/Winner';
-import Rules from './components/Rules';
-import HowTo from './components/HowTo';
+import GameStateHub from './components/GameStateHub';
+import Rules from './components/info/Rules';
+import HowTo from './components/info/HowTo';
+import Footer from './components/info/Footer';
 import Debug from './components/Debug';
 import * as DateUtil from './utils/DateUtil';
-import './css/App.css';
 
 import ContractDelegate from './eth/ContractDelegate';
 
@@ -27,19 +24,6 @@ class App extends Component {
     // *********************
     this.DEBUG_MODE = true;
     // *********************
-
-    this.state = {
-      unitBet: 0,
-      lastDayToBet: 0,
-      gameState: -1,
-      gameBalance: 0,
-      placeBetSuccess: false,
-      placeBetStatus: '',
-      accounts: [],
-      activeAccountIdx: 0,
-      withdrawPrizeStatus: '',
-      betDate: 0
-    };
 
     // Init contract delegate.
     this.contractDelegate = new ContractDelegate(
@@ -67,7 +51,10 @@ class App extends Component {
       accounts: this.contractDelegate.accounts,
       activeAccountIdx: this.contractDelegate.activeAccountIdx,
       currentContractDate: this.contractDelegate.currentDate,
+      withdrawPrizeSuccess: this.contractDelegate.withdrawPrizeSuccess,
       withdrawPrizeStatus: this.contractDelegate.withdrawPrizeStatus,
+      playerBalance: this.contractDelegate.playerBalance,
+      isWinner: this.contractDelegate.isWinner,
       betDate: this.contractDelegate.betDate
     });
   }
@@ -107,8 +94,9 @@ class App extends Component {
 
   render() {
 
-    const daysLeft = DateUtil.deltaDays(new Date(), this.state.lastDayToBet);
-    const daysLeftStr = daysLeft == 1 ? `${daysLeft} day` : `${daysLeft} days`;
+    const betsAreOpen = this.state.gameState === 'betsAreOpen';
+    const daysLeft = betsAreOpen ? DateUtil.deltaDays(new Date(), this.state.lastDayToBet) : 0;
+    const daysLeftStr = daysLeft === 1 ? `${daysLeft} day` : `${daysLeft} days`;
 
     return (
       <div className="container">
@@ -131,48 +119,39 @@ class App extends Component {
               <span className="badge">{this.state.gameBalance} ETH</span>
             </span>
             &nbsp;
+            {betsAreOpen &&
             <span className={`label label-${daysLeft < 3 ? 'danger' : 'warning'}`}>
               Bets close in {daysLeftStr}
             </span>
+            }
+            {!betsAreOpen &&
+            <span className={`label label-danger`}>
+              Bets are closed
+            </span>
+            }
           </h2>
         </div>
 
         {/* GAME AREA => PlaceBets || BetsClosed || Winner */}
         <div className="row">
           <div className="col-md-8">
-            {(() => {
-              switch(this.state.gameState) {
-                case 'betsAreOpen':
-                  if(this.state.betDate) {
-                    return <BetPlaced
-                        minDate={this.state.lastDayToBet}
-                        betDate={this.state.betDate}
-                      />;
-                  }
-                  else {
-                    return <PlaceBets
-                      gameBalance={this.state.gameBalance}
-                      minDate={this.state.lastDayToBet}
-                      placeBetSuccess={this.state.placeBetSuccess}
-                      unitBet={this.state.unitBet}
-                      placeBetStatus={this.state.placeBetStatus}
-                      handlePlaceBet={this.handlePlaceBet}
-                    />;
-                  }
-                case 'betsAreClosed':
-                  return <BetsClosed/>;
-                case 'betsResolved':
-                  return <Winner
-                    numWinners={this.state.numWinners}
-                    winPrize={this.state.winPrize}
-                    winDate={this.state.winDate}
-                    withdrawPrizeStatus={this.state.withdrawPrizeStatus}
-                    handleWithdrawPrize={this.handleWithdrawPrize}
-                  />;
-                default:
-                  return <br/>;
-              }
-            })()}
+            <GameStateHub
+              gameState={this.state.gameState}
+              withdrawPrizeSuccess={this.state.withdrawPrizeSuccess}
+              betDate={this.state.betDate}
+              lastDayToBet={this.state.lastDayToBet}
+              gameBalance={this.state.gameBalance}
+              placeBetSuccess={this.state.placeBetSuccess}
+              placeBetStatus={this.state.placeBetStatus}
+              unitBet={this.state.unitBet}
+              handlePlaceBet={this.handlePlaceBet}
+              numWinners={this.state.numWinners}
+              winPrize={this.state.winPrize}
+              winDate={this.state.winDate}
+              withdrawPrizeStatus={this.state.withdrawPrizeStatus}
+              handleWithdrawPrize={this.handleWithdrawPrize}
+              isWinner={this.state.isWinner}
+            />
           </div>
 
           {/* SIDE PANEL */}
@@ -181,6 +160,10 @@ class App extends Component {
             <HowTo/>
           </div>
         </div>
+
+        <br/>
+
+        <Footer/>
 
         {/* DEBUG AREA */}
         {this.DEBUG_MODE &&
@@ -192,6 +175,7 @@ class App extends Component {
           handleAccountSelect={this.handleAccountSelect}
           handleContractDateChange={this.handleContractDateChange}
           handleResolveDateSet={this.handleResolveDateSet}
+          playerBalance={this.state.playerBalance}
         />}
 
       </div>

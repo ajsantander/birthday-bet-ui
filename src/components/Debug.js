@@ -1,5 +1,4 @@
 import React from 'react';
-import './css/Debug.css';
 import * as DateUtil from '../utils/DateUtil';
 
 const Debug = ({ accounts,
@@ -8,6 +7,7 @@ const Debug = ({ accounts,
                  handleContractDateChange,
                  currentContractDate,
                  lastDayToBet,
+                 playerBalance,
                  handleResolveDateSet }) => {
 
   const setContractDateInputField = (input) => {
@@ -31,7 +31,7 @@ const Debug = ({ accounts,
   return (
     <div>
       <br/>
-      <div className="debug-container">
+      <div style={{backgroundColor: "lightgray"}}>
 
         <h4>DebugPanel</h4>
 
@@ -45,6 +45,7 @@ const Debug = ({ accounts,
               return <option value={index} key={index}>account {index}: {account}</option>
             })}
           </select>
+          &nbsp; {playerBalance} ETH
         </form>
 
         {/* TIME TRAVEL */}

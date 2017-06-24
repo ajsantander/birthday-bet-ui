@@ -24,7 +24,9 @@ class Rules extends React.Component {
       <div className="">
 
         <h2>Game Rules</h2>
-        <p>All the rules and funtionality of this game are set but enforced by a smart contract written in Solidity, running in the Ethereum blockchain. Shame on me!</p>
+        <p>All the rules and funtionality of this game are set and
+          enforced by a smart contract written in Solidity,
+          running in the Ethereum blockchain.</p>
 
         {/* SHOW MODAL */}
         <Button

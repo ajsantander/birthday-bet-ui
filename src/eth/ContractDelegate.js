@@ -5,7 +5,7 @@ import * as DateUtil from '../utils/DateUtil';
 
 /* **************************************************************** */
 /* **************************************************************** */
-let contractAddress = '0xb2df74e4dacc631b2db599986f22c548f8940b51';
+let contractAddress = '0xc5eeb61ea0c59dde121f1977542647f115161f73';
 /* **************************************************************** */
 /* **************************************************************** */
 
@@ -26,8 +26,13 @@ class ContractDelegate {
     this.contract = this.getDeployedContract();
     // console.log('contract: ', this.contract);
 
+    // Default state.
+    this.betDate = 0;
+
+    // Refresh state.
     this.getNodeData();
     this.getContractData();
+    this.getPlayerData();
     this.handleEventsFromTheContract();
 
     if(debug) {
@@ -91,6 +96,7 @@ class ContractDelegate {
     let msg = this.web3.toAscii(results[1]);
     console.log('  success: ', success);
     console.log('  msg: ', msg);
+    this.withdrawPrizeSuccess = success;
     this.withdrawPrizeStatus = msg;
 
     // Withdraw prize.
@@ -99,6 +105,7 @@ class ContractDelegate {
     }
 
     this.getBalance();
+    this.getPlayerData();
     this.stateUpdateCallback();
   }
 
@@ -130,6 +137,15 @@ class ContractDelegate {
   * */
 
   getPlayerData() {
+
+    const account = this.web3.eth.accounts[this.activeAccountIdx];
+
+    // Account balance.
+    let balWei = this.web3.eth.getBalance(account).toNumber();
+    let balEther = +this.web3.fromWei(balWei, 'ether');
+    this.playerBalance = balEther;
+
+    // Bet date.
     const unixDate = this.contract.getPlayerBetDate(this.web3.eth.accounts[this.activeAccountIdx]).toNumber();
     if(unixDate !== 0) {
       this.betDate = DateUtil.unixToDate(unixDate);
@@ -138,6 +154,13 @@ class ContractDelegate {
     else {
       this.betDate = undefined;
     }
+
+    // Can withdraw?
+    let results = this.contract.validatePrizeWithdrawal.call(
+      {from: account}
+    );
+    let success = results[0];
+    this.isWinner = success;
   }
 
   getNodeData() {
