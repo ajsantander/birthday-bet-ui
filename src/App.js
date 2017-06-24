@@ -5,6 +5,7 @@ import Rules from './components/info/Rules';
 import HowTo from './components/info/HowTo';
 import Footer from './components/info/Footer';
 import Debug from './components/Debug';
+import Contract from './components/info/Contract';
 import * as DateUtil from './utils/DateUtil';
 
 import ContractDelegate from './eth/ContractDelegate';
@@ -168,8 +169,12 @@ class App extends Component {
         </div>
 
         <br/>
+        <br/>
 
         <Footer/>
+        <br/>
+
+        <Contract/>
 
         {/* DEBUG AREA */}
         {this.DEBUG_MODE &&
