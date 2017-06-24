@@ -21,12 +21,13 @@ const Winner = ({ numWinners,
       <h2>And the winner is!</h2>
 
       {/*TODO: use labels with badges*/}
+      {winDate &&
       <h2>
         <span className="label label-info">
           My daughter was born on &nbsp;
           <span className="badge">{DateUtil.dateToStr(winDate)}</span>
         </span>
-      </h2>
+      </h2>}
       <h2>
         <span className="label label-info">
           Number of winners &nbsp;

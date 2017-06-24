@@ -9,7 +9,8 @@ const Footer = () => {
       borderTop: '1px solid #e5e5e5'
     }}>
       <p>This is a Solidity experiment running in the Ethereum ropsten testnet.
-        <br/>Alejandro Santander <a href="https://ajsantander.github.io" target="_blank">ajsantander.github.io</a></p>
+        <br/>Alejandro Santander
+        <a href="https://ajsantander.github.io" target="_blank" rel="noopener noreferrer">ajsantander.github.io</a></p>
     </footer>
   )
 };
