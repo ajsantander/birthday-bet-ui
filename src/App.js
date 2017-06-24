@@ -25,11 +25,8 @@ class App extends Component {
     // *********************
     // *********************
     // *********************
-    this.DEBUG_MODE = false;
-    // if true, it will:
-    // 1) use a local web3 instance connected to a testrpc blockhain
-    //    instead of an injected web3 (like metamask).
-    // 2) display a debugging console that can be used to fully simulate games with a testrpc running.
+    this.SHOW_DEBUG_PANEL = false;
+    this.USE_TESTRPC = false;
     // *********************
     // *********************
     // *********************
@@ -37,7 +34,7 @@ class App extends Component {
     // Init contract delegate.
     this.contractDelegate = new ContractDelegate(
       this.handleContractStateUpdate,
-      this.DEBUG_MODE
+      this.USE_TESTRPC
     );
 
     this.state = {};
@@ -177,7 +174,7 @@ class App extends Component {
         <Contract/>
 
         {/* DEBUG AREA */}
-        {this.DEBUG_MODE &&
+        {this.SHOW_DEBUG_PANEL &&
         <Debug
           currentContractDate={this.state.currentContractDate}
           lastDayToBet={this.state.lastDayToBet}

@@ -10,7 +10,7 @@ class ContractDelegate {
     // This callback will be executed each time there is an
     // update from the contract.
     this.stateUpdateCallback = stateUpdateCallback;
-    this.deug = debug;
+    this.debug = debug;
 
     // Default state.
     this.currentDate = new Date();
@@ -18,6 +18,9 @@ class ContractDelegate {
     this.betDate = undefined;
     this.gameState = undefined;
     this.activeAccount = undefined;
+
+    // Allows interaction via the console.
+    window.contractDelegate = this;
 
     window.addEventListener('load', () => {
       this.initialize();
@@ -177,7 +180,6 @@ class ContractDelegate {
     this.getContract().then(instance => {
       this.contractAddress = instance.address;
       this.web3.eth.getBalance(this.contractAddress, (error, balWei) => {
-        console.log('balWei: ', balWei);
         this.contractBalance = +this.web3.fromWei(balWei, 'ether');
         console.log('contractBalance: ', this.contractBalance);
         this.stateUpdateCallback();
@@ -277,7 +279,8 @@ class ContractDelegate {
     let dateUnix = DateUtil.dateToUnix(date);
     this.getContract().then(instance => {
       this.contract.instance = instance;
-      return this.contract.instance.setTime(dateUnix, {from: this.web3.eth.accounts[0]});
+      // TODO: review gas
+      return this.contract.instance.setTime(dateUnix, {from: this.web3.eth.accounts[0], gas: 2100000});
     }).then(() => {
       this.stateUpdateCallback();
       console.log('time set');

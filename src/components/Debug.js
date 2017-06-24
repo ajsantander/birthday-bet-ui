@@ -41,7 +41,7 @@ const Debug = ({ accounts,
           <select
             className=""
             onChange={(event) => handleAccountSelect(event.target.value)} defaultValue={accountIdx}>
-            {accounts.map((account, index) => {
+            {accounts && accounts.map((account, index) => {
               return <option value={index} key={index}>account {index}: {account}</option>
             })}
           </select>
@@ -51,12 +51,12 @@ const Debug = ({ accounts,
         {/* TIME TRAVEL */}
         <div className="">
           <label>Contract date:</label>
-          <input
+          {currentContractDate && <input
             className=""
             type="date"
             defaultValue={DateUtil.dateToStr(currentContractDate, 'yyyy-mm-dd')}
             ref={ref => setContractDateInputField(ref)}
-          />
+          />}
           <button
             type="submit"
             className=""
@@ -66,12 +66,12 @@ const Debug = ({ accounts,
         {/* RESOLVE */}
         <div className="">
           <label>Resolve:</label>
-          <input
+          {lastDayToBet && <input
             className=""
             type="date"
             defaultValue={DateUtil.dateToStr(lastDayToBet, 'yyyy-mm-dd')}
             ref={ref => setResolveDateInputField(ref)}
-          />
+          />}
           <button
             type="submit"
             className=""
