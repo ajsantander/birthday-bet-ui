@@ -17,6 +17,10 @@ class ContractDelegate {
     this.lastDayToBet = new Date();
     this.betDate = undefined;
     this.gameState = undefined;
+
+    window.addEventListener('load', () => {
+      this.initialize();
+    });
   }
 
   initialize() {

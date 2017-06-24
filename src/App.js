@@ -98,10 +98,6 @@ class App extends Component {
   * React Lifecycle
   * */
 
-  componentDidMount() {
-    this.contractDelegate.initialize();
-  }
-
   render() {
 
     const betsAreOpen = this.state.gameState && this.state.gameState === 'betsAreOpen';
