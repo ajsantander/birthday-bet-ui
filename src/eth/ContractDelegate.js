@@ -52,7 +52,7 @@ class ContractDelegate {
     // Listen for account changes.
     setInterval(() => {
       if(this.web3.eth.accounts && this.web3.eth.accounts.length > 0) {
-        if(this.web3.eth.accounts[0] != this.activeAccount) {
+        if(this.web3.eth.accounts[0] !== this.activeAccount) {
           console.log('account changed: ' + this.web3.eth.accounts[0]);
           this.activeAccount = this.web3.eth.accounts[0];
           this.changeActiveAccount(0);
@@ -176,10 +176,11 @@ class ContractDelegate {
     console.log('ContractManager - getBalance()');
     this.getContract().then(instance => {
       this.contractAddress = instance.address;
-      let balWei = this.web3.eth.getBalance(this.contractAddress, () => {
+      this.web3.eth.getBalance(this.contractAddress, (error, balWei) => {
+        console.log('balWei: ', balWei);
         this.contractBalance = +this.web3.fromWei(balWei, 'ether');
+        console.log('contractBalance: ', this.contractBalance);
         this.stateUpdateCallback();
-        console.log('this.contractBalance: ', this.contractBalance);
       });
     });
   }
