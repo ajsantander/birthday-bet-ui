@@ -8,9 +8,12 @@ const Footer = () => {
       color: '#777',
       borderTop: '1px solid #e5e5e5'
     }}>
-      <p>This is a Solidity experiment running in the Ethereum ropsten testnet.
-        <br/>Alejandro Santander
-        <a href="https://ajsantander.github.io" target="_blank" rel="noopener noreferrer">ajsantander.github.io</a></p>
+      <p>This is a Solidity experiment running in the Ethereum ropsten testnet. <br/>
+        <a href="https://ajsantander.github.io" target="_blank" rel="noopener noreferrer">Alejandro Santander</a>
+        &nbsp;Sources on Github&nbsp;
+        <a href="https://github.com/ajsantander/birthday-bet" target="_blank" rel="noopener noreferrer">birthday-bet</a>
+        &nbsp;|&nbsp;<a href="https://github.com/ajsantander/birthday-bet-ui" target="_blank" rel="noopener noreferrer">birthday-bet-ui</a>
+      </p>
     </footer>
   )
 };

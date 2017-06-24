@@ -17,6 +17,7 @@ class ContractDelegate {
     this.lastDayToBet = new Date();
     this.betDate = undefined;
     this.gameState = undefined;
+    this.activeAccount = undefined;
 
     window.addEventListener('load', () => {
       this.initialize();
@@ -47,6 +48,17 @@ class ContractDelegate {
     this.getContractData();
     this.getPlayerData();
     this.handleEventsFromTheContract();
+
+    // Listen for account changes.
+    setInterval(() => {
+      if(this.web3.eth.accounts && this.web3.eth.accounts.length > 0) {
+        if(this.web3.eth.accounts[0] != this.activeAccount) {
+          console.log('account changed: ' + this.web3.eth.accounts[0]);
+          this.activeAccount = this.web3.eth.accounts[0];
+          this.changeActiveAccount(0);
+        }
+      }
+    }, 100);
   }
 
   /*
