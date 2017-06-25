@@ -38,8 +38,12 @@ class HowTo extends React.Component {
             <Modal.Title>How to Play This Game</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <div className="alert alert-danger">TODO!</div>
-            Lorem ipsum...
+            <p>This experiment will only run in chrome, with the metamask extension installed.
+              See: <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">metamask.io</a>
+            </p>
+            <p>Once the extension is installed, you will need to switch to the ropsten testnet by selecting the
+            network in the upper left corner of the extension's window.</p>
+            <p>To get some free ETH to bet, you may use metamask's testnet faucet: <a href="https://faucet.metamask.io/" target="_blank" rel="noopener noreferrer">faucet.metamask.io</a></p>
           </Modal.Body>
           <Modal.Footer>
             <Button

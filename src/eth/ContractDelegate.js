@@ -18,6 +18,9 @@ class ContractDelegate {
     this.betDate = undefined;
     this.gameState = undefined;
     this.activeAccount = undefined;
+    this.network = undefined;
+    this.connected = false;
+    this.placingBet = false;
 
     // Allows interaction via the console.
     window.contractDelegate = this;
@@ -61,7 +64,31 @@ class ContractDelegate {
           this.changeActiveAccount(0);
         }
       }
-    }, 100);
+    }, 1000);
+
+    // Check network.
+    setInterval(() => {
+      this.web3.version.getNetwork((err, netId) => {
+        let newNetwork;
+        switch (netId) {
+          case "1":
+            newNetwork = 'eth mainnet';
+            break;
+          case "2":
+            newNetwork = 'eth morden testnet';
+            break;
+          case "3":
+            newNetwork = 'eth ropsten testnet';
+            break;
+          default:
+            newNetwork = 'testrpc';
+        }
+        if(newNetwork !== this.network) {
+          this.network = newNetwork;
+          this.stateUpdateCallback();
+        }
+      })
+    }, 1000);
   }
 
   /*
@@ -69,9 +96,13 @@ class ContractDelegate {
    * */
 
   getContract() {
-    // return this.contract.deployed();
-    return this.contract.at('0xe089a5e7d3b804666a12c778fd22e4d80d4ad494');
-    // return this.contract.at('0xe5f3f89a7e90bf5ea69fcdcebc0835f483637f4b');
+    if(this.debug) {
+      return this.contract.deployed();
+    }
+    else {
+      return this.contract.at('0x9bb8bd68d0dff1326fd4b3a90f929563e166dc0d');
+      // return this.contract.at('0xe5f3f89a7e90bf5ea69fcdcebc0835f483637f4b');
+    }
   }
 
   getPlayerData() {
@@ -147,6 +178,7 @@ class ContractDelegate {
     }).then(currentGameState => {
       this.gameState = this.stateAsStr(currentGameState.toNumber());
       console.log('this.gameState: ', this.gameState);
+      this.connected = true;
       this.stateUpdateCallback();
     });
   }
@@ -193,6 +225,8 @@ class ContractDelegate {
 
   placeBet(date) {
 
+    this.placingBet = false;
+
     console.log('ContractManager - placeBet()');
 
     let account = this.getAccountAtIndex(this.activeAccountIdx);
@@ -202,6 +236,7 @@ class ContractDelegate {
     let betValueWei = this.web3.toWei(this.unitBet, 'ether');
 
     // Validate bet.
+    console.log('validating bet...');
     this.getContract().then(instance => {
       this.contract.instance = instance;
       return this.contract.instance.validateBet.call(
@@ -219,12 +254,20 @@ class ContractDelegate {
 
       // Place bet.
       if(success) {
-        this.betDate = date;
+        console.log('placing bet...');
+        this.placingBet = true;
         this.stateUpdateCallback();
         return this.contract.instance.placeBet(betDateUnix, {from:account, value:betValueWei});
       }
     }).then(() => {
+      console.log('bet placed!');
+      this.placingBet = false;
       this.getBalance();
+      this.betDate = date;
+      this.stateUpdateCallback();
+    }).catch(() => {
+      console.log('place bet failed xP');
+      this.placingBet = false;
       this.stateUpdateCallback();
     });
   }
@@ -288,6 +331,7 @@ class ContractDelegate {
   }
 
   changeActiveAccount(idx) {
+    this.betDate = undefined;
     this.activeAccountIdx = idx;
     this.getPlayerData();
     this.stateUpdateCallback();

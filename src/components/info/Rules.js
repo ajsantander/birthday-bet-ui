@@ -1,5 +1,6 @@
 import React from 'react';
 import {Button, Modal} from 'react-bootstrap';
+import * as DateUtil from '../../utils/DateUtil';
 
 class Rules extends React.Component {
 
@@ -20,6 +21,10 @@ class Rules extends React.Component {
   }
 
   render() {
+
+    let unitBet = this.props.unitBet ? this.props.unitBet : 'the unit bet';
+    let lastDayToBet = this.props.lastDayToBet ? DateUtil.dateToStr(this.props.lastDayToBet) : 'the last day to bet';
+
     return (
       <div className="">
 
@@ -37,25 +42,25 @@ class Rules extends React.Component {
         {/* MODAL */}
         <Modal show={this.state.showModal} onHide={() => this.closeModal()}>
           <Modal.Header closeButton>
-            <Modal.Title>Smart Contract Rules</Modal.Title>
+            <Modal.Title>Gabe/SmartContract Rules</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <div className="alert alert-danger">TODO!</div>
 
-            <p>After bets close on XXX, I will report my daughter's birthdate to the contract
+            <p>After bets close on {lastDayToBet}, I will report my daughter's birthdate to the contract
               and it will automatically send the prize to the winner/winners.</p>
 
-            <p>You will have to return to this site after XXX and, if you are a winner,
+            <p>You will have to return to this site after {lastDayToBet} and, if you are a winner,
               you will be able to withdraw the funds in this site.</p>
 
             <p>The following rules are enforced and have been tested on the contract:</p>
             <ul className="">
-              <li className="">Fixed bet of 0.5 eth</li>
-              <li className="">You can't bet on more than 1 date</li>
-              <li className="">On the day she's born, I'll report the date to the contract, which will send it's entire balance to the winner/s</li>
-              <li className="">Winner takes all. If there is a tie, balance will be split equally amongst the winners</li>
-              <li className="">I can't bet</li>
-              <li className="">Bets can only take place within a given time span</li>
+              <li className="">Fixed bet of {unitBet} eth. You can't bet more, you can't bet less.</li>
+              <li className="">You can't bet on more than once, and you can't change your bet after you have submitted the transaction.</li>
+              <li className="">On the day she's born, or probably a couple of days later when I finish freaking out, I'll report the date to the contract.</li>
+              <li className="">Once I report the date to the contract, it will find the winners (whoever is closest to the true date), but it will not send prizes automatically. Players will have to check in and withdraw the prize themselves.</li>
+              <li className="">If there is a tie, the contract's balance will be split equally amongst the winners.</li>
+              <li className="">I can't bet.</li>
+              <li className="">Bets can only take place until {lastDayToBet}, and I can only define the winning date after that.</li>
             </ul>
 
           </Modal.Body>

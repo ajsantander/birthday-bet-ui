@@ -19,6 +19,7 @@ const GameStateHub = ({ gameState,
                         winDate,
                         withdrawPrizeSuccess,
                         handleWithdrawPrize,
+                        placingBet,
                         isWinner,
                         lastDayToBet }) => {
   return (
@@ -28,7 +29,7 @@ const GameStateHub = ({ gameState,
 
           // BETS OPEN
           case 'betsAreOpen':
-            if(betDate) {
+            if(placingBet || betDate) {
               return <BetPlaced
                 minDate={lastDayToBet}
                 betDate={betDate}

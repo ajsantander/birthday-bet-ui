@@ -25,7 +25,7 @@ class App extends Component {
     // *********************
     // *********************
     // *********************
-    this.SHOW_DEBUG_PANEL = false;
+    this.SHOW_DEBUG_PANEL = true;
     this.USE_TESTRPC = false;
     // *********************
     // *********************
@@ -63,7 +63,10 @@ class App extends Component {
       withdrawPrizeStatus: this.contractDelegate.withdrawPrizeStatus,
       playerBalance: this.contractDelegate.playerBalance,
       isWinner: this.contractDelegate.isWinner,
-      betDate: this.contractDelegate.betDate
+      betDate: this.contractDelegate.betDate,
+      placingBet: this.contractDelegate.placingBet,
+      network: this.contractDelegate.network,
+      connected: this.contractDelegate.connected
     });
   }
 
@@ -117,6 +120,7 @@ class App extends Component {
           </p>
 
           {/* STATS */}
+          {this.state.connected &&
           <h2>
             <span className="label label-info">
               Jackpot &nbsp;
@@ -134,12 +138,22 @@ class App extends Component {
             </span>
             }
           </h2>
+          }
+
+          {this.state.network &&
+          <div>
+            <h3>
+              <span className="label label-info">{this.state.network}</span>
+            </h3>
+          </div>}
+
         </div>
 
         {/* GAME AREA => PlaceBets || BetsClosed || Winner */}
         <div className="row">
           <div className="col-md-8">
             <GameStateHub
+              placingBet={this.state.placingBet}
               gameState={this.state.gameState}
               withdrawPrizeSuccess={this.state.withdrawPrizeSuccess}
               betDate={this.state.betDate}
@@ -160,18 +174,13 @@ class App extends Component {
 
           {/* SIDE PANEL */}
           <div className="col-md-4">
-            <Rules/>
+            <Rules
+              unitBet={this.state.unitBet}
+              lastDayToBet={this.state.lastDayToBet}
+            />
             <HowTo/>
           </div>
         </div>
-
-        <br/>
-        <br/>
-
-        <Footer/>
-        <br/>
-
-        <Contract/>
 
         {/* DEBUG AREA */}
         {this.SHOW_DEBUG_PANEL &&
@@ -185,6 +194,14 @@ class App extends Component {
           handleResolveDateSet={this.handleResolveDateSet}
           playerBalance={this.state.playerBalance}
         />}
+
+        <br/>
+        <br/>
+
+        <Footer/>
+        <br/>
+
+        <Contract/>
 
       </div>
     );
