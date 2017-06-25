@@ -25,7 +25,7 @@ class App extends Component {
     // *********************
     // *********************
     // *********************
-    this.SHOW_DEBUG_PANEL = true;
+    this.SHOW_DEBUG_PANEL = false;
     this.USE_TESTRPC = false;
     // *********************
     // *********************
@@ -66,7 +66,8 @@ class App extends Component {
       betDate: this.contractDelegate.betDate,
       placingBet: this.contractDelegate.placingBet,
       network: this.contractDelegate.network,
-      connected: this.contractDelegate.connected
+      connected: this.contractDelegate.connected,
+      contractAddress: this.contractDelegate.contractAddress
     });
   }
 
@@ -201,7 +202,9 @@ class App extends Component {
         <Footer/>
         <br/>
 
-        <Contract/>
+        <Contract
+          contractAddress={this.state.contractAddress}
+        />
 
       </div>
     );

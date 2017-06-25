@@ -2,10 +2,19 @@ import React from 'react';
 import Highlight from 'react-highlight';
 import ContractCode from '../../eth/BetOnDate.js';
 
-const Contract = () => {
+const Contract = ({contractAddress}) => {
+
+  const url = 'https://ropsten.etherscan.io/address/' + contractAddress;
+
   return (
     <div>
-      <Highlight>{ContractCode}</Highlight>
+      <div>
+        <Highlight>{ContractCode}</Highlight>
+      </div>
+      <div className="text-center">
+        <a href={url} target="_blank" rel="noreferer noopener">{url}</a>
+      </div>
+      <br/>
     </div>
   )
 };
