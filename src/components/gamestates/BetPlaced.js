@@ -2,14 +2,12 @@ import React from 'react';
 import * as DateUtil from '../../utils/DateUtil';
 
 const BetPlaced = ({minDate, betDate}) => {
-
-
   return (
     <div>
 
       <h2>
         <span className={`label label-${betDate?  "success" : "default"}`}>
-          {betDate ? 'Your bet was placed!' : 'Placing bet...'}
+          {betDate ? 'You have placed your bet!' : 'Placing bet...'}
         </span>
       </h2>
 

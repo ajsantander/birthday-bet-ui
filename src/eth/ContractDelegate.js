@@ -251,24 +251,26 @@ class ContractDelegate {
       console.log('  msg: ', msg);
       this.placeBetSuccess = success;
       this.placeBetStatus = msg;
+      this.stateUpdateCallback();
 
       // Place bet.
       if(success) {
         console.log('placing bet...');
         this.placingBet = true;
         this.stateUpdateCallback();
-        return this.contract.instance.placeBet(betDateUnix, {from:account, value:betValueWei});
+        this.contract.instance.placeBet(betDateUnix, {from:account, value:betValueWei})
+          .then(() => {
+          console.log('bet placed!');
+          this.placingBet = false;
+          this.getBalance();
+          this.betDate = date;
+          this.stateUpdateCallback();
+        }).catch(() => {
+          console.log('place bet failed xP');
+          this.placingBet = false;
+          this.stateUpdateCallback();
+        });
       }
-    }).then(() => {
-      console.log('bet placed!');
-      this.placingBet = false;
-      this.getBalance();
-      this.betDate = date;
-      this.stateUpdateCallback();
-    }).catch(() => {
-      console.log('place bet failed xP');
-      this.placingBet = false;
-      this.stateUpdateCallback();
     });
   }
 
@@ -277,8 +279,7 @@ class ContractDelegate {
     let dateUnix = DateUtil.dateToUnix(date);
     this.getContract().then(instance => {
       this.contract.instance = instance;
-      // TODO: define gas
-      return this.contract.instance.resolve(dateUnix, {from: this.web3.eth.accounts[0], gas: 2100000});
+      return this.contract.instance.resolve(dateUnix, {from: this.web3.eth.accounts[0], gas: 100000});
     }).then(() => {
       this.stateUpdateCallback();
       console.log('contract resolved');
@@ -307,7 +308,7 @@ class ContractDelegate {
       if(success) {
         // TODO: define gas
         this.stateUpdateCallback();
-        return this.contract.instance.withdrawPrize({from: account, gas: 2100000});
+        return this.contract.instance.withdrawPrize({from: account, gas: 1000000});
       }
     }).then(() => {
       console.log('prize withdrawn');

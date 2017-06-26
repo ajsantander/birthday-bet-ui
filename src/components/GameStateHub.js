@@ -10,7 +10,9 @@ const GameStateHub = ({ gameState,
                         betDate,
                         gameBalance,
                         withdrawPrizeStatus,
+                        network,
                         placeBetSuccess,
+                        connected,
                         placeBetStatus,
                         unitBet,
                         handlePlaceBet,
@@ -29,7 +31,7 @@ const GameStateHub = ({ gameState,
 
           // BETS OPEN
           case 'betsAreOpen':
-            if(placingBet || betDate) {
+            if(betDate || placingBet) {
               return <BetPlaced
                 minDate={lastDayToBet}
                 betDate={betDate}
@@ -67,7 +69,9 @@ const GameStateHub = ({ gameState,
             />;
 
           default:
-            return <NoChain/>;
+            return <NoChain
+              connected={connected}
+            />;
         }
       })()}
     </div>

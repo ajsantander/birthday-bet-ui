@@ -154,6 +154,8 @@ class App extends Component {
         <div className="row">
           <div className="col-md-8">
             <GameStateHub
+              network={this.state.network}
+              connected={this.state.connected}
               placingBet={this.state.placingBet}
               gameState={this.state.gameState}
               withdrawPrizeSuccess={this.state.withdrawPrizeSuccess}
