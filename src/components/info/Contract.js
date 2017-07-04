@@ -12,7 +12,7 @@ const Contract = ({contractAddress}) => {
         <Highlight>{ContractCode}</Highlight>
       </div>
       <div className="text-center">
-        <a href={url} target="_blank" rel="noreferer noopener">{url}</a>
+        <a href={url} target="_blank" rel="noopener noreferrer">{url}</a>
       </div>
       <br/>
     </div>

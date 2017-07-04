@@ -105,6 +105,7 @@ class App extends Component {
     const betsAreOpen = this.state.gameState && this.state.gameState === 'betsAreOpen';
     const daysLeft = betsAreOpen ? DateUtil.deltaDays(new Date(), this.state.lastDayToBet) : 0;
     const daysLeftStr = daysLeft === 1 ? `${daysLeft} day` : `${daysLeft} days`;
+    console.log('state: ' + this.state.gameState);
 
     return (
       <div className="container">
@@ -128,16 +129,16 @@ class App extends Component {
               <span className="badge">{this.state.gameBalance} ETH</span>
             </span>
             &nbsp;
-            {betsAreOpen &&
-            <span className={`label label-${daysLeft < 3 ? 'danger' : 'warning'}`}>
-              Bets close in {daysLeftStr}
-            </span>
-            }
-            {!betsAreOpen &&
-            <span className={`label label-danger`}>
-              Bets are closed
-            </span>
-            }
+            {/*{betsAreOpen &&*/}
+            {/*<span className={`label label-${daysLeft < 3 ? 'danger' : 'warning'}`}>*/}
+              {/*Bets close in {daysLeftStr}*/}
+            {/*</span>*/}
+            {/*}*/}
+            {/*{!betsAreOpen &&*/}
+            {/*<span className={`label label-danger`}>*/}
+              {/*Bets are closed*/}
+            {/*</span>*/}
+            {/*}*/}
           </h2>
           }
 
